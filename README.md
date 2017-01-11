@@ -30,5 +30,6 @@ docker run \
     docker-events-notifier
 ```
 
-
+## License
+Apache License Version 2.0
 
