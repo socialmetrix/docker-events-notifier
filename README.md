@@ -11,23 +11,37 @@ When a `die` event is triggered it sends the affected container's information to
 
 ```shell
 docker build \
-    -t docker-events-notifier:0.5 \
+    -t docker-events-notifier:$VERSION \
     -t docker-events-notifier .
 ```
-
 
 ## Run
 1. Because this app is just for you, you'll be fine with  a [Slack Tokens for Testing and Development](https://api.slack.com/docs/oauth-test-tokens)
 
-1. Run the container passing `SLACK_API_KEY` and `SLACK_CHANNEL` parameters
+#### Single docker engine
+Run the container on a single docker engine, using slack api key and channel.
 
 ```shell
 docker run \
     -d --restart=always \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -e SLACK_API_KEY="xoxp-9999999999-9999999999-9999999999-9999999999e6c9999999999" \
+    -e SLACK_API_KEY="xoxp-9999999999-9999999999-9999999999-99999999999999999999999" \
     -e SLACK_CHANNEL="#foo" \
-    docker-events-notifier
+    socialmetrix/docker-events-notifier:$VERSION
+```
+
+#### Docker swarm mode
+Run the container on every node of your swarm.
+
+```shell
+docker service create \
+    --mode global \
+    --restart-condition any \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    -e SLACK_API_KEY="xoxp-9999999999-99999999999-999999999999-99999999999999999999999999999999" \
+    -e SLACK_CHANNEL="#foo" \
+    --name docker-events-notifier \
+    socialmetrix/docker-events-notifier:$VERSION
 ```
 
 ## License
