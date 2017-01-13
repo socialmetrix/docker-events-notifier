@@ -21,6 +21,7 @@ import os
 import sys
 import time
 import signal
+import socket
 
 slack_token = None
 slack_channel = None
@@ -46,12 +47,13 @@ def watch_and_notify_events():
         attributes = event['Actor']['Attributes']
         when = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(event['time']))
 
-        message = ":rotating_light:   At _{}_ your container *{}* (_{}_) died. Image: *{}* Exit Code: *{}*" \
+        message = ":rotating_light:  At _{}_ your container *{}* (_{}_) died. Image: *{}* Exit Code: *{}* Origin: *{}*" \
             .format(when,
                     attributes['name'],
                     container_id,
                     attributes['image'],
-                    attributes['exitCode'])
+                    attributes['exitCode'],
+                    socket.gethostname())
 
         send_message(slack_channel, message)
 
@@ -71,7 +73,7 @@ def send_message(channel, message):
 
 def exit_handler(_signo, _stack_frame):
     send_message(slack_channel,
-                 ':disappointed: *{}* received *SIGTERM*. Goodbye!'.format(APP_NAME))
+                 ':disappointed: *{}* received *SIGTERM* on _{}_. Goodbye!'.format(APP_NAME, socket.gethostname()))
     sys.exit(0)
 
 
@@ -82,7 +84,9 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, exit_handler)
     signal.signal(signal.SIGINT, exit_handler)
 
-    send_message(slack_channel,
-                 ':bulb: *{}* reporting for duty! Alerts will be sent to this channel.'.format(APP_NAME))
+    message = ':bulb: *{}* reporting for duty on _{}_. '.format(APP_NAME, socket.gethostname()) + \
+              '  Alerts will be sent to this channel.'
+
+    send_message(slack_channel, message)
 
     watch_and_notify_events()
