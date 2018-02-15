@@ -21,10 +21,10 @@ import os
 import sys
 import time
 import signal
-import socket
 
 slack_token = None
 slack_channel = None
+host = 'localhost'
 
 APP_NAME = 'Docker Events Notifier'
 
@@ -37,10 +37,8 @@ def get_config(env_key):
     return value
 
 
-def watch_and_notify_events():
+def watch_and_notify_events(client):
     event_filters = {"event": "die"}
-
-    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
     for event in client.events(filters=event_filters, decode=True):
         container_id = event['Actor']['ID'][:12]
@@ -53,7 +51,7 @@ def watch_and_notify_events():
                     container_id,
                     attributes['image'],
                     attributes['exitCode'],
-                    socket.gethostname())
+                    host)
 
         send_message(slack_channel, message)
 
@@ -73,8 +71,12 @@ def send_message(channel, message):
 
 def exit_handler(_signo, _stack_frame):
     send_message(slack_channel,
-                 ':disappointed: *{}* received *SIGTERM* on _{}_. Goodbye!'.format(APP_NAME, socket.gethostname()))
+                 ':disappointed: *{}* received *SIGTERM* on _{}_. Goodbye!'.format(APP_NAME, host))
     sys.exit(0)
+
+
+def host_server(client):
+    return client.info()['Name']
 
 
 if __name__ == '__main__':
@@ -84,9 +86,12 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, exit_handler)
     signal.signal(signal.SIGINT, exit_handler)
 
-    message = ':bulb: *{}* reporting for duty on _{}_. '.format(APP_NAME, socket.gethostname()) + \
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    host = host_server(client)
+
+    message = ':bulb: *{}* reporting for duty on _{}_. '.format(APP_NAME, host) + \
               '  Alerts will be sent to this channel.'
 
     send_message(slack_channel, message)
 
-    watch_and_notify_events()
+    watch_and_notify_events(client)
