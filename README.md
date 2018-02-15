@@ -1,4 +1,4 @@
-# Docker Events Notifier 
+# Docker Events Notifier
 Receive Slack notifications when a container dies
 
 ## How it works
@@ -8,11 +8,9 @@ When a `die` event is triggered it sends the affected container's information to
 
 
 ## Build
-
+You must [create a release tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) in order to build and publish this image.
 ```shell
-docker build \
-    -t docker-events-notifier:$VERSION \
-    -t docker-events-notifier .
+./build-all.sh
 ```
 
 ## Run
@@ -46,4 +44,3 @@ docker service create \
 
 ## License
 Apache License Version 2.0
-
