@@ -9,7 +9,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 echo "Building ${IMAGE}:${VERSION}"
-docker build -t ${IMAGE}:${VERSION} .
+docker build --build-arg BUILD_VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
 echo "Pushing ${IMAGE}:${VERSION}"
 docker push ${IMAGE}:${VERSION}

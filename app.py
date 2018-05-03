@@ -22,9 +22,10 @@ import signal
 slack_token = None
 slack_channel = None
 
-APP_NAME = 'Docker Events Notifier'
+BUILD_VERSION=os.getenv('BUILD_VERSION')
+APP_NAME = 'Docker Events Notifier (v{})'.format(BUILD_VERSION)
 MAX_LOG_LINES=50
-MAX_LOG_CHARS=int(4000*.9) # slack messages can have at most 4000 chars
+MAX_LOG_CHARS=int(4000*.98) # slack messages can have at most 4000 chars
 
 def get_config(env_key):
     value = os.getenv(env_key)
