@@ -1,4 +1,4 @@
-# Copyright 2016 Socialmetrix
+# Copyright 2018 Socialmetrix
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from __future__ import print_function
-
 import docker
 from slackclient import SlackClient
 import os
@@ -24,10 +21,10 @@ import signal
 
 slack_token = None
 slack_channel = None
-host = 'localhost'
 
 APP_NAME = 'Docker Events Notifier'
-
+MAX_LOG_LINES=50
+MAX_LOG_CHARS=int(4000*.9) # slack messages can have at most 4000 chars
 
 def get_config(env_key):
     value = os.getenv(env_key)
@@ -55,11 +52,21 @@ def watch_and_notify_events(client):
 
         send_message(slack_channel, message)
 
+        try:
+            target = client.containers.get(container_id)
+            logs = target.logs(tail=MAX_LOG_LINES)
+            log_msg = "*Last log* entries are:\n\n```\n{}\n```".format(
+                logs.decode('utf8')[-MAX_LOG_CHARS:]
+            )
+            send_message(slack_channel, log_msg)
+        except docker.errors.NotFound:
+            send_message(slack_channel, 'Could not access the containers\' log. Probably it was removed (--rm option)')
+            pass
+
 
 def send_message(channel, message):
     global slack_token
     global slack_channel
-
     sc = SlackClient(slack_token)
     sc.api_call(
         "chat.postMessage",
@@ -95,3 +102,4 @@ if __name__ == '__main__':
     send_message(slack_channel, message)
 
     watch_and_notify_events(client)
+    pass

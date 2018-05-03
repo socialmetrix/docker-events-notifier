@@ -4,7 +4,7 @@ Receive Slack notifications when a container dies
 ## How it works
 This image connects to the host machine socket, through a volume mapping, and listen [Docker Events API](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/monitor-dockers-events).
 
-When a `die` event is triggered it sends the affected container's information to the selected Slack channel.  
+When a `die` event is triggered it sends the affected containers' information to the selected Slack channel.  
 
 
 ## Build
@@ -25,7 +25,7 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -e SLACK_API_KEY="xoxp-9999999999-9999999999-9999999999-99999999999999999999999" \
     -e SLACK_CHANNEL="#foo" \
-    socialmetrix/docker-events-notifier:$VERSION
+    socialmetrix/docker-events-notifier:${VERSION}
 ```
 
 #### Docker swarm mode
@@ -39,7 +39,7 @@ docker service create \
     -e SLACK_API_KEY="xoxp-9999999999-99999999999-999999999999-99999999999999999999999999999999" \
     -e SLACK_CHANNEL="#foo" \
     --name docker-events-notifier \
-    socialmetrix/docker-events-notifier:$VERSION
+    socialmetrix/docker-events-notifier:${VERSION}
 ```
 
 ## License
